@@ -6,10 +6,13 @@ export default function Index() {
   const colorScheme = useColorScheme();
 
   const daysOfMonth = () => {
+    const date = new Date();
+    const today = date.getDate();
+
     const days = [];
     for (let i = 1; i <= 31; i++) {
       days.push(
-        <CalendarDay key={i} onPress={() => {}} active={false}>
+        <CalendarDay key={i} onPress={() => {}} active={i === today}>
           {i}
         </CalendarDay>
       );
