@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Text, useColorScheme, View } from "react-native";
 import CustomButton from "../../components/Button";
 import FixedToBottom from "../../components/FixedToBottom";
@@ -6,15 +6,19 @@ import PageLayout from "../../components/PageLayout";
 
 export default function Index() {
   const colorScheme = useColorScheme();
-  const [time, setTime] = useState(0);
+  const [time, setTime] = useState(86400);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
+  const [lastResetDate, setLastResetDate] = useState(new Date().toDateString());
 
-  const getSecondsUntilMidnight = () => {
-    const now: number = new Date();
-    const midnight: number = new Date();
-    midnight.setHours(24, 0, 0, 0);
-    return Math.floor((midnight - now) / 1000);
+  const checkNewDay = () => {
+    const today = new Date().toDateString();
+    if (today !== lastResetDate) {
+      setTime(86400);
+      setIsTimerRunning(false);
+      setLastResetDate(today);
+    }
   };
+
 
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
@@ -27,8 +31,35 @@ export default function Index() {
 
   function handleStartTimer() {
     setIsTimerRunning(true);
-    setTime(getSecondsUntilMidnight());
   }
+
+  
+  useEffect(() => {
+    checkNewDay();
+    const dayCheckInterval = setInterval(checkNewDay, 60000); 
+    return () => clearInterval(dayCheckInterval);
+  }, [lastResetDate]);
+
+  useEffect(() => {
+    let timer: number;
+    if (isTimerRunning) {
+      timer = setInterval(() => {
+        setTime((prevTime) => {
+          if (prevTime <= 0) {
+            clearInterval(timer!);
+            setIsTimerRunning(false);
+            return 0;
+          }
+          return prevTime - 1;
+        });
+      }, 1000);
+    }
+    return () => {
+      if (timer) {
+        clearInterval(timer);
+      }
+    };
+  }, [isTimerRunning]);
 
   return (
     <>
@@ -46,7 +77,7 @@ export default function Index() {
               colorScheme === "dark" ? "text-white" : "text-gray-900"
             }`}
           >
-            {formatTime(getSecondsUntilMidnight())}
+            {formatTime(time)}
           </Text>
         </View>
       </PageLayout>
