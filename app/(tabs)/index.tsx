@@ -19,6 +19,12 @@ export default function Index() {
     }
   };
 
+  const timeLeft = (time: number) => {
+    const limit = 22 * 60 * 60;
+    const timeLeft = time - limit;
+
+    return formatTime(timeLeft);
+  };
 
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
@@ -33,10 +39,9 @@ export default function Index() {
     setIsTimerRunning(true);
   }
 
-  
   useEffect(() => {
     checkNewDay();
-    const dayCheckInterval = setInterval(checkNewDay, 60000); 
+    const dayCheckInterval = setInterval(checkNewDay, 60000);
     return () => clearInterval(dayCheckInterval);
   }, [lastResetDate]);
 
@@ -78,6 +83,23 @@ export default function Index() {
             }`}
           >
             {formatTime(time)}
+          </Text>
+        </View>
+
+        <View className="flex items-center justify-center mt-5">
+          <Text
+            className={`text-lg font-bold ${
+              colorScheme === "dark" ? "text-white" : "text-gray-900"
+            }`}
+          >
+            Time Left:
+          </Text>
+          <Text
+            className={`text-4xl font-bold ${
+              colorScheme === "dark" ? "text-white" : "text-gray-900"
+            }`}
+          >
+            {timeLeft(time)}
           </Text>
         </View>
       </PageLayout>
