@@ -20,20 +20,20 @@ const TabsLayout = () => {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Calendar",
+          title: "Home",
           headerShown: false,
           tabBarIcon: ({ color, size }) => (
-            <Icon name="calendar-outline" size={size} color={color} />
+            <Icon name="home-outline" size={size} color={color} />
           ),
         }}
       />
       <Tabs.Screen
-        name="medication"
+        name="calendar"
         options={{
-          title: "Medication",
+          title: "Calendar",
           headerShown: false,
           tabBarIcon: ({ color, size }) => (
-            <Icon name="medical-outline" size={size} color={color} />
+            <Icon name="calendar-outline" size={size} color={color} />
           ),
         }}
       />

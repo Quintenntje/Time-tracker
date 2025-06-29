@@ -11,7 +11,7 @@ export default function Index() {
           colorScheme === "dark" ? "text-white" : "text-gray-900"
         }`}
       >
-        Welcome
+        Calendar
       </Text>
     </PageLayout>
   );
