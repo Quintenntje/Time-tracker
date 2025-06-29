@@ -5,12 +5,17 @@ import PageLayout from "../../components/PageLayout";
 export default function Index() {
   const colorScheme = useColorScheme();
 
-  const daysOfMonth = () => {
+
+  function getDaysInMonth(month: number, year: number) {
+    return new Date(year, month + 1, 0).getDate();
+  }
+
+  const renderDaysOfMonth = () => {
     const date = new Date();
     const today = date.getDate();
 
     const days = [];
-    for (let i = 1; i <= 31; i++) {
+    for (let i = 1; i <= getDaysInMonth(date.getMonth(), date.getFullYear()); i++) {
       days.push(
         <CalendarDay key={i} onPress={() => {}} active={i === today}>
           {i}
@@ -30,7 +35,7 @@ export default function Index() {
         Calendar
       </Text>
       <View className="flex flex-row flex-wrap flex-grow gap-2 mt-4">
-        {daysOfMonth()}
+        {renderDaysOfMonth()}
       </View>
     </PageLayout>
   );
