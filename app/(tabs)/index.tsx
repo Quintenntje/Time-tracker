@@ -27,7 +27,14 @@ export default function Index() {
       const storedIsRunning = await AsyncStorage.getItem("isTimerRunning");
       const storedDate = await AsyncStorage.getItem("lastResetDate");
 
-      if (storedTime) setTime(parseInt(storedTime));
+      if (storedTime) {
+        const parsedTime = parseInt(storedTime);
+        if (!isNaN(parsedTime)) {
+          setTime(parsedTime);
+        } else {
+          setTime(86400);
+        }
+      }
       if (storedIsRunning) setIsTimerRunning(JSON.parse(storedIsRunning));
       if (storedDate) setLastResetDate(storedDate);
     } catch (error) {
@@ -75,24 +82,29 @@ export default function Index() {
       setTime(86400);
       setIsTimerRunning(false);
       setLastResetDate(today);
-      const timeData: TimeData = {
-        date: today,
-        totalTimeUsed: 86400 - time,
-        sessions: [
-          {
-            startTime: new Date().toISOString(),
-            endTime: new Date(
-              new Date().getTime() + (86400 - time) * 1000
-            ).toISOString(),
-            duration: 86400 - time,
-          },
-        ],
-      };
-      await saveTimeData(timeData);
+      await storeTimeData();
+
       await AsyncStorage.setItem("lastResetDate", today);
       await saveTime(86400);
       await saveTimerState(false);
     }
+  };
+
+  const storeTimeData = async () => {
+    const timeData: TimeData = {
+      date: new Date().toDateString(),
+      totalTimeUsed: 86400 - time,
+      sessions: [
+        {
+          startTime: new Date().toISOString(),
+          endTime: new Date(
+            new Date().getTime() + (86400 - time) * 1000
+          ).toISOString(),
+          duration: 86400 - time,
+        },
+      ],
+    };
+    await saveTimeData(timeData);
   };
 
   const timeLeft = (time: number) => {
@@ -133,7 +145,7 @@ export default function Index() {
   useEffect(() => {
     let timer: number;
     if (isTimerRunning) {
-      timer = setInterval(() => {
+      timer = setInterval(async () => {
         setTime((prevTime) => {
           const newTime = prevTime <= 0 ? 0 : prevTime - 1;
 
@@ -146,6 +158,7 @@ export default function Index() {
 
           return newTime;
         });
+        await storeTimeData();
       }, 1000);
     }
     return () => {
