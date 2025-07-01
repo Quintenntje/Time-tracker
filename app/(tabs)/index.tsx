@@ -1,8 +1,19 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect, useState } from "react";
 import { Text, useColorScheme, View } from "react-native";
 import CustomButton from "../../components/Button";
 import FixedToBottom from "../../components/FixedToBottom";
 import PageLayout from "../../components/PageLayout";
+
+interface TimeData {
+  date: string;
+  totalTimeUsed: number;
+  sessions: {
+    startTime: string;
+    endTime: string;
+    duration: number;
+  }[];
+}
 
 export default function Index() {
   const colorScheme = useColorScheme();
@@ -10,19 +21,83 @@ export default function Index() {
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [lastResetDate, setLastResetDate] = useState(new Date().toDateString());
 
-  const checkNewDay = () => {
+  const loadStoredData = async () => {
+    try {
+      const storedTime = await AsyncStorage.getItem("time");
+      const storedIsRunning = await AsyncStorage.getItem("isTimerRunning");
+      const storedDate = await AsyncStorage.getItem("lastResetDate");
+
+      if (storedTime) setTime(parseInt(storedTime));
+      if (storedIsRunning) setIsTimerRunning(JSON.parse(storedIsRunning));
+      if (storedDate) setLastResetDate(storedDate);
+    } catch (error) {
+      console.log("Error loading stored data:", error);
+    }
+  };
+
+  const saveTime = async (newTime: number) => {
+    try {
+      await AsyncStorage.setItem("time", newTime.toString());
+    } catch (error) {
+      console.log("Error saving time:", error);
+    }
+  };
+
+  const saveTimerState = async (isRunning: boolean) => {
+    try {
+      await AsyncStorage.setItem("isTimerRunning", JSON.stringify(isRunning));
+    } catch (error) {
+      console.log("Error saving timer state:", error);
+    }
+  };
+
+  const saveTimeData = async (timeData: TimeData) => {
+    try {
+      const existing = await AsyncStorage.getItem("timeData");
+      let updatedData = timeData;
+
+      if (existing !== null) {
+        const parsed = JSON.parse(existing);
+        updatedData = { ...parsed, ...timeData };
+      }
+
+      await AsyncStorage.setItem("timeData", JSON.stringify(updatedData));
+    } catch (error) {
+      console.log("Error saving time data:", error);
+    }
+  };
+
+  const checkNewDay = async () => {
     const today = new Date().toDateString();
-    if (today !== lastResetDate) {
+    const savedDate = await AsyncStorage.getItem("lastResetDate");
+
+    if (savedDate !== today) {
       setTime(86400);
       setIsTimerRunning(false);
       setLastResetDate(today);
+      const timeData: TimeData = {
+        date: today,
+        totalTimeUsed: 86400 - time,
+        sessions: [
+          {
+            startTime: new Date().toISOString(),
+            endTime: new Date(
+              new Date().getTime() + (86400 - time) * 1000
+            ).toISOString(),
+            duration: 86400 - time,
+          },
+        ],
+      };
+      await saveTimeData(timeData);
+      await AsyncStorage.setItem("lastResetDate", today);
+      await saveTime(86400);
+      await saveTimerState(false);
     }
   };
 
   const timeLeft = (time: number) => {
     const limit = 22 * 60 * 60;
     const timeLeft = time - limit;
-
     return formatTime(timeLeft);
   };
 
@@ -37,7 +112,17 @@ export default function Index() {
 
   function handleStartTimer() {
     setIsTimerRunning(true);
+    saveTimerState(true);
   }
+
+  function handleStopTimer() {
+    setIsTimerRunning(false);
+    saveTimerState(false);
+  }
+
+  useEffect(() => {
+    loadStoredData();
+  }, []);
 
   useEffect(() => {
     checkNewDay();
@@ -50,12 +135,16 @@ export default function Index() {
     if (isTimerRunning) {
       timer = setInterval(() => {
         setTime((prevTime) => {
-          if (prevTime <= 0) {
-            clearInterval(timer!);
+          const newTime = prevTime <= 0 ? 0 : prevTime - 1;
+
+          saveTime(newTime);
+
+          if (newTime <= 0) {
             setIsTimerRunning(false);
-            return 0;
+            saveTimerState(false);
           }
-          return prevTime - 1;
+
+          return newTime;
         });
       }, 1000);
     }
@@ -109,18 +198,11 @@ export default function Index() {
           <CustomButton
             title="Stop Timer"
             variant="danger"
-            onPress={() => {
-              setIsTimerRunning(false);
-            }}
+            onPress={handleStopTimer}
           />
         )}
         {!isTimerRunning && (
-          <CustomButton
-            title="Start Timer"
-            onPress={() => {
-              handleStartTimer();
-            }}
-          />
+          <CustomButton title="Start Timer" onPress={handleStartTimer} />
         )}
       </FixedToBottom>
     </>

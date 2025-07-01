@@ -1,3 +1,4 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useState } from "react";
 import { Text, TouchableOpacity, useColorScheme, View } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
@@ -19,9 +20,12 @@ export default function Calendar() {
     return new Date(year, month, 1).getDay();
   }
 
-  function handleDatePress(day: number) {
+  async function handleDatePress(day: number) {
     setSheetOpen(true);
     setSelectedDay(day);
+    const data = await AsyncStorage.getItem("timeData");
+
+    console.log(data);
   }
 
   function goToPreviousMonth() {
