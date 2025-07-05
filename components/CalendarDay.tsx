@@ -14,13 +14,22 @@ const CalendarDay: React.FC<PageLayoutProps> = ({
   toMuchTimeUsed = false,
 }) => {
   const colorScheme = useColorScheme();
+
+  const getBorderColor = () => {
+    if (toMuchTimeUsed === null) {
+      return "border-gray-300 dark:border-gray-700";
+    }
+    if (toMuchTimeUsed === true) {
+      return "border-red-500 dark:border-red-700";
+    }
+    return "border-green-500 dark:border-green-700";
+  };
+
   return (
     <Pressable onPress={onPress}>
       <View
-        className={`flex justify-center items-center p-4 min-h-16 min-w-16 rounded-full border border-gray-300 dark:border-gray-700 ${
+        className={`flex justify-center items-center p-4 min-h-16 min-w-16 rounded-full border  ${getBorderColor()} ${
           active ? "bg-blue-500 dark:bg-blue-700" : ""
-        } ${toMuchTimeUsed ? "border-red-500 dark:border-red-700" : ""} ${
-          colorScheme === "dark" ? "" : "bg-gray-100"
         }`}
       >
         <Text

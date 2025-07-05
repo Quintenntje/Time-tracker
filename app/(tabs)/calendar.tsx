@@ -1,5 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Text, TouchableOpacity, useColorScheme, View } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import CustomBottomSheet from "../../components/BottomSheet";
@@ -35,6 +35,13 @@ export default function Calendar() {
       currentDate.getMonth(),
       day
     );
+
+    const today = new Date();
+
+    if (selectedDate > today) {
+      return null;
+    }
+
     const dateKey = selectedDate.toDateString();
     const dayData = timeData[dateKey];
 
