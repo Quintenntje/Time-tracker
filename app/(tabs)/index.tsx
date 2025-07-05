@@ -61,11 +61,19 @@ export default function Index() {
   const saveTimeData = async (timeData: TimeData) => {
     try {
       const existing = await AsyncStorage.getItem("timeData");
-      let updatedData = timeData;
+      let updatedData = {};
 
       if (existing !== null) {
         const parsed = JSON.parse(existing);
-        updatedData = { ...parsed, ...timeData };
+
+        updatedData = {
+          ...parsed,
+          [timeData.date]: timeData,
+        };
+      } else {
+        updatedData = {
+          [timeData.date]: timeData,
+        };
       }
 
       await AsyncStorage.setItem("timeData", JSON.stringify(updatedData));
