@@ -1,5 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Text, TouchableOpacity, useColorScheme, View } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import CustomBottomSheet from "../../components/BottomSheet";
@@ -11,7 +11,38 @@ export default function Calendar() {
   const [selectedDay, setSelectedDay] = useState(0);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [totalTimeUsed, setTotalTimeUsed] = useState(0);
+  const [timeData, setTimeData] = useState<Record<string, any>>({});
   const colorScheme = useColorScheme();
+
+  const loadTimeData = async () => {
+    try {
+      const data = await AsyncStorage.getItem("timeData");
+      if (data) {
+        setTimeData(JSON.parse(data));
+      }
+    } catch (error) {
+      console.log("Error loading time data:", error);
+    }
+  };
+
+  useEffect(() => {
+    loadTimeData();
+  }, []);
+
+  const dayHasTooMuchTime = (day: number) => {
+    const selectedDate = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth(),
+      day
+    );
+    const dateKey = selectedDate.toDateString();
+    const dayData = timeData[dateKey];
+
+    if (!dayData) return false;
+
+    const timeLimit = 2 * 60 * 60;
+    return dayData.totalTimeUsed > timeLimit;
+  };
 
   function getDaysInMonth(month: number, year: number) {
     return new Date(year, month + 1, 0).getDate();
@@ -112,6 +143,7 @@ export default function Calendar() {
             handleDatePress(i);
           }}
           active={isToday}
+          toMuchTimeUsed={dayHasTooMuchTime(i)}
         >
           {i}
         </CalendarDay>
@@ -176,13 +208,13 @@ export default function Calendar() {
         </View>
       </PageLayout>
       <CustomBottomSheet isOpen={sheetOpen} onClose={() => setSheetOpen(false)}>
-        <Text className="text-lg font-semibold">
+        <Text className="text-2xl color-blue-500 font-semibold">
           {getMonthName(currentDate.getMonth())} {selectedDay},{" "}
           {currentDate.getFullYear()}
         </Text>
-        <Text className="mt-2 text-gray-600">Selected day: {selectedDay}</Text>
-        <Text className="mt-2 text-gray-600">
-          Total time used: {totalTimeUsed} min
+        <Text className="mt-2 text-gray-600 text-xl">
+          Total time used:{" "}
+          <Text className="font-bold color-blue-500">{totalTimeUsed} min</Text>
         </Text>
       </CustomBottomSheet>
     </>

@@ -212,6 +212,11 @@ export default function Index() {
             {timeLeft(time)}
           </Text>
         </View>
+        <View>
+          <Text>
+            
+          </Text>
+        </View>
       </PageLayout>
 
       <FixedToBottom>
