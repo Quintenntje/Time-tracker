@@ -10,6 +10,7 @@ export default function Calendar() {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [selectedDay, setSelectedDay] = useState(0);
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [totalTimeUsed, setTotalTimeUsed] = useState(0);
   const colorScheme = useColorScheme();
 
   function getDaysInMonth(month: number, year: number) {
@@ -25,9 +26,23 @@ export default function Calendar() {
     setSelectedDay(day);
     const data = await AsyncStorage.getItem("timeData");
 
-    console.log(data);
-  }
+    if (data) {
+      const selectedDate = new Date(
+        currentDate.getFullYear(),
+        currentDate.getMonth(),
+        day
+      );
+      const parsedData = JSON.parse(data);
+      const dateKey = selectedDate.toDateString();
+      const existingData = parsedData[dateKey] || [];
 
+      const totalTimeUsed = existingData.totalTimeUsed || 0;
+
+      setTotalTimeUsed(totalTimeUsed);
+    } else {
+      console.log("No data found for the selected date.");
+    }
+  }
   function goToPreviousMonth() {
     setCurrentDate((prev) => {
       const newDate = new Date(prev);
@@ -166,6 +181,9 @@ export default function Calendar() {
           {currentDate.getFullYear()}
         </Text>
         <Text className="mt-2 text-gray-600">Selected day: {selectedDay}</Text>
+        <Text className="mt-2 text-gray-600">
+          Total time used: {totalTimeUsed} min
+        </Text>
       </CustomBottomSheet>
     </>
   );
