@@ -29,6 +29,17 @@ const Braces = () => {
     loadBracesTime();
   }, []);
 
+  const handleSave = () => {
+    const newBracesTime = {
+      amount: bracesCount,
+      date: new Date().toISOString(),
+    };
+    setBracesTime([...bracesTime, newBracesTime]);
+    setBracesCount(0);
+    setIsOpen(false);
+    AsyncStorage.setItem("bracesTime", JSON.stringify(bracesTime));
+  };
+
   return (
     <>
       <PageLayout>
@@ -67,7 +78,7 @@ const Braces = () => {
           <CustomButton
             title="Save"
             variant="primary"
-            onPress={() => setIsOpen(false)}
+            onPress={handleSave}
           />
           <CustomButton
             title="Cancel"
