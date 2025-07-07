@@ -1,19 +1,10 @@
+import { TimeData } from "@/types/TimeData";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect, useState } from "react";
 import { Text, useColorScheme, View } from "react-native";
 import CustomButton from "../../components/Button";
 import FixedToBottom from "../../components/FixedToBottom";
 import PageLayout from "../../components/PageLayout";
-
-interface TimeData {
-  date: string;
-  totalTimeUsed: number;
-  sessions: {
-    startTime: string;
-    endTime: string;
-    duration: number;
-  }[];
-}
 
 export default function Index() {
   const colorScheme = useColorScheme();
@@ -61,19 +52,23 @@ export default function Index() {
   const saveTimeData = async (timeData: TimeData) => {
     try {
       const existing = await AsyncStorage.getItem("timeData");
-      let updatedData = {};
+      let updatedData: TimeData[] = [];
 
       if (existing !== null) {
-        const parsed = JSON.parse(existing);
+        const parsed: TimeData[] = JSON.parse(existing);
 
-        updatedData = {
-          ...parsed,
-          [timeData.date]: timeData,
-        };
+        const existingIndex = parsed.findIndex(
+          (item) => item.date === timeData.date
+        );
+
+        if (existingIndex !== -1) {
+          updatedData = [...parsed];
+          updatedData[existingIndex] = timeData;
+        } else {
+          updatedData = [...parsed, timeData];
+        }
       } else {
-        updatedData = {
-          [timeData.date]: timeData,
-        };
+        updatedData = [timeData];
       }
 
       await AsyncStorage.setItem("timeData", JSON.stringify(updatedData));
@@ -81,7 +76,6 @@ export default function Index() {
       console.log("Error saving time data:", error);
     }
   };
-
   const checkNewDay = async () => {
     const today = new Date().toDateString();
     const savedDate = await AsyncStorage.getItem("lastResetDate");
@@ -213,9 +207,7 @@ export default function Index() {
           </Text>
         </View>
         <View>
-          <Text>
-            
-          </Text>
+          <Text></Text>
         </View>
       </PageLayout>
 

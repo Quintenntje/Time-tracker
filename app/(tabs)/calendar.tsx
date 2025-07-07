@@ -1,3 +1,4 @@
+import { TimeData } from "@/types/TimeData";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect, useState } from "react";
 import { Text, TouchableOpacity, useColorScheme, View } from "react-native";
@@ -11,7 +12,7 @@ export default function Calendar() {
   const [selectedDay, setSelectedDay] = useState(0);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [totalTimeUsed, setTotalTimeUsed] = useState(0);
-  const [timeData, setTimeData] = useState<Record<string, any>>({});
+  const [timeData, setTimeData] = useState<TimeData[]>([]);
   const colorScheme = useColorScheme();
 
   const loadTimeData = async () => {
@@ -29,26 +30,51 @@ export default function Calendar() {
     loadTimeData();
   }, []);
 
-  const dayHasTooMuchTime = (day: number) => {
+  const dayHasLessTime = (day: number) => {
     const selectedDate = new Date(
       currentDate.getFullYear(),
       currentDate.getMonth(),
       day
     );
+    if (!selectedDate) return false;
+
+    if (!timeData || !Array.isArray(timeData) || timeData.length === 0) {
+      return null;
+    }
+
+    const firstDate = new Date(timeData[0].date);
+    const lastDate = new Date(timeData[timeData.length - 1].date);
+
+    const selectedDateFormatted = new Date(
+      selectedDate.getFullYear(),
+      selectedDate.getMonth(),
+      selectedDate.getDate()
+    );
+
+    if (selectedDateFormatted < firstDate || selectedDateFormatted > lastDate) {
+      return null;
+    }
 
     const today = new Date();
 
-    if (selectedDate > today) {
+    if (selectedDateFormatted > today) {
       return null;
     }
 
     const dateKey = selectedDate.toDateString();
-    const dayData = timeData[dateKey];
+    let dayData: TimeData | null = null;
+
+    for (const dayItem of timeData) {
+      if (dayItem.date === dateKey) {
+        dayData = dayItem;
+        break;
+      }
+    }
 
     if (!dayData) return false;
 
-    const timeLimit = 2 * 60 * 60;
-    return dayData.totalTimeUsed > timeLimit;
+    const timeLimit = 2 * 60 * 60; // 2 hours
+    return dayData.totalTimeUsed < timeLimit;
   };
 
   function getDaysInMonth(month: number, year: number) {
@@ -62,24 +88,30 @@ export default function Calendar() {
   async function handleDatePress(day: number) {
     setSheetOpen(true);
     setSelectedDay(day);
-    const data = await AsyncStorage.getItem("timeData");
 
-    if (data) {
-      const selectedDate = new Date(
-        currentDate.getFullYear(),
-        currentDate.getMonth(),
-        day
-      );
-      const parsedData = JSON.parse(data);
-      const dateKey = selectedDate.toDateString();
-      const existingData = parsedData[dateKey] || [];
+    const selectedDate = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth(),
+      day
+    );
 
-      const totalTimeUsed = existingData.totalTimeUsed || 0;
+    let totalTimeUsed = 0;
 
-      setTotalTimeUsed(totalTimeUsed);
-    } else {
-      console.log("No data found for the selected date.");
+    const dateKey = selectedDate.toDateString();
+    let dayData: TimeData | null = null;
+
+    for (const dayItem of timeData) {
+      if (dayItem.date === dateKey) {
+        dayData = dayItem;
+        break;
+      }
     }
+
+    if (dayData) {
+      totalTimeUsed = dayData.totalTimeUsed;
+    }
+
+    setTotalTimeUsed(totalTimeUsed);
   }
   function goToPreviousMonth() {
     setCurrentDate((prev) => {
@@ -119,6 +151,13 @@ export default function Calendar() {
     return months[month];
   };
 
+  const formatTimeFromSeconds = (time: number) => {
+    const hours = Math.floor(time / 3600);
+    const minutes = Math.floor((time % 3600) / 60);
+    const seconds = time % 60;
+    return `${hours}h ${minutes}m ${seconds}s`;
+  };
+
   const renderDaysOfMonth = () => {
     const today = new Date();
     const isCurrentMonth =
@@ -150,7 +189,7 @@ export default function Calendar() {
             handleDatePress(i);
           }}
           active={isToday}
-          toMuchTimeUsed={dayHasTooMuchTime(i)}
+          hasLessTime={dayHasLessTime(i)}
         >
           {i}
         </CalendarDay>
@@ -221,7 +260,9 @@ export default function Calendar() {
         </Text>
         <Text className="mt-2 text-gray-600 text-xl">
           Total time used:{" "}
-          <Text className="font-bold color-blue-500">{totalTimeUsed} min</Text>
+          <Text className="font-bold color-blue-500">
+            {formatTimeFromSeconds(totalTimeUsed)}
+          </Text>
         </Text>
       </CustomBottomSheet>
     </>
