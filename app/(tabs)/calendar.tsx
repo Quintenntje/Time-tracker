@@ -1,8 +1,8 @@
+import MonthNavigator from "@/components/MonthNavigator";
 import { TimeData } from "@/types/TimeData";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect, useState } from "react";
 import { Text, TouchableOpacity, useColorScheme, View } from "react-native";
-import Icon from "react-native-vector-icons/Ionicons";
 import CustomBottomSheet from "../../components/BottomSheet";
 import CalendarDay from "../../components/CalendarDay";
 import PageLayout from "../../components/PageLayout";
@@ -198,16 +198,7 @@ export default function Calendar() {
     <>
       <PageLayout>
         <View className="flex-row items-center justify-between mb-4">
-          <TouchableOpacity
-            onPress={goToPreviousMonth}
-            className="p-2 rounded-full bg-gray-100 dark:bg-gray-800"
-          >
-            <Icon
-              name="chevron-back-outline"
-              size={24}
-              color={colorScheme === "dark" ? "white" : "black"}
-            />
-          </TouchableOpacity>
+          <MonthNavigator onPress={goToPreviousMonth} next={false} />
 
           <TouchableOpacity onPress={goToCurrentMonth}>
             <Text
@@ -219,16 +210,7 @@ export default function Calendar() {
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity
-            onPress={goToNextMonth}
-            className="p-2 rounded-full bg-gray-100 dark:bg-gray-800"
-          >
-            <Icon
-              name="chevron-forward-outline"
-              size={24}
-              color={colorScheme === "dark" ? "white" : "black"}
-            />
-          </TouchableOpacity>
+          <MonthNavigator onPress={goToNextMonth} next={true} />
         </View>
 
         <View className="flex-row justify-between mb-2">
