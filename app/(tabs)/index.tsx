@@ -1,6 +1,9 @@
+import { BracesTime } from "@/types/BracesTime";
 import { TimeData } from "@/types/TimeData";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useEffect, useState } from "react";
+import { useFocusEffect } from "@react-navigation/native";
+import { router } from "expo-router";
+import React, { useEffect, useState } from "react";
 import { Text, useColorScheme, View } from "react-native";
 import CustomButton from "../../components/Button";
 import FixedToBottom from "../../components/FixedToBottom";
@@ -11,12 +14,18 @@ export default function Index() {
   const [time, setTime] = useState(86400);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [lastResetDate, setLastResetDate] = useState(new Date().toDateString());
+  const [bracesTime, setBracesTime] = useState<BracesTime[]>([]);
 
   const loadStoredData = async () => {
     try {
       const storedTime = await AsyncStorage.getItem("time");
       const storedIsRunning = await AsyncStorage.getItem("isTimerRunning");
       const storedDate = await AsyncStorage.getItem("lastResetDate");
+      const storedBracesTime = await AsyncStorage.getItem("bracesTime");
+
+      if (storedBracesTime) {
+        setBracesTime(JSON.parse(storedBracesTime));
+      }
 
       if (storedTime) {
         const parsedTime = parseInt(storedTime);
@@ -134,9 +143,11 @@ export default function Index() {
     saveTimerState(false);
   }
 
-  useEffect(() => {
-    loadStoredData();
-  }, []);
+  useFocusEffect(
+    React.useCallback(() => {
+      loadStoredData();
+    }, [])
+  );
 
   useEffect(() => {
     checkNewDay();
@@ -180,47 +191,68 @@ export default function Index() {
         >
           Welcome
         </Text>
-        <View className="flex items-center justify-center mt-10 w-full">
-          <Text
-            className={`text-6xl font-bold ${
-              colorScheme === "dark" ? "text-white" : "text-gray-900"
-            }`}
-          >
-            {formatTime(time)}
-          </Text>
-        </View>
 
-        <View className="flex items-center justify-center mt-5">
-          <Text
-            className={`text-lg font-bold ${
-              colorScheme === "dark" ? "text-white" : "text-gray-900"
-            }`}
-          >
-            Time Left:
-          </Text>
-          <Text
-            className={`text-4xl font-bold ${
-              colorScheme === "dark" ? "text-white" : "text-gray-900"
-            }`}
-          >
-            {timeLeft(time)}
-          </Text>
-        </View>
-        <View>
-          <Text></Text>
-        </View>
+        {bracesTime.length === 0 ? (
+          <View className="flex items-center justify-center mt-10 w-full">
+            <Text
+              className={`text-xl text-center ${
+                colorScheme === "dark" ? "text-gray-300" : "text-gray-600"
+              }`}
+            >
+              No braces found, add the total braces to get started
+            </Text>
+          </View>
+        ) : (
+          <>
+            <View className="flex items-center justify-center mt-10 w-full">
+              <Text
+                className={`text-6xl font-bold ${
+                  colorScheme === "dark" ? "text-white" : "text-gray-900"
+                }`}
+              >
+                {formatTime(time)}
+              </Text>
+            </View>
+
+            <View className="flex items-center justify-center mt-5">
+              <Text
+                className={`text-lg font-bold ${
+                  colorScheme === "dark" ? "text-white" : "text-gray-900"
+                }`}
+              >
+                Time Left:
+              </Text>
+              <Text
+                className={`text-4xl font-bold ${
+                  colorScheme === "dark" ? "text-white" : "text-gray-900"
+                }`}
+              >
+                {timeLeft(time)}
+              </Text>
+            </View>
+          </>
+        )}
       </PageLayout>
 
       <FixedToBottom>
-        {isTimerRunning && (
+        {bracesTime.length === 0 ? (
           <CustomButton
-            title="Stop Timer"
-            variant="danger"
-            onPress={handleStopTimer}
+            title="Set Braces Time"
+            onPress={() => router.push("/braces")}
           />
-        )}
-        {!isTimerRunning && (
-          <CustomButton title="Start Timer" onPress={handleStartTimer} />
+        ) : (
+          <>
+            {isTimerRunning && (
+              <CustomButton
+                title="Stop Timer"
+                variant="danger"
+                onPress={handleStopTimer}
+              />
+            )}
+            {!isTimerRunning && (
+              <CustomButton title="Start Timer" onPress={handleStartTimer} />
+            )}
+          </>
         )}
       </FixedToBottom>
     </>
