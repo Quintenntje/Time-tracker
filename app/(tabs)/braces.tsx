@@ -9,7 +9,9 @@ import PageLayout from "../../components/PageLayout";
 
 interface BracesTime {
   amount: number;
-  date: string;
+  startDate: string;
+  endDate: string;
+  completed: boolean;
 }
 
 const Braces = () => {
@@ -20,24 +22,48 @@ const Braces = () => {
 
   const loadBracesTime = async () => {
     const bracesTime = await AsyncStorage.getItem("bracesTime");
+
     if (bracesTime) {
       setBracesTime(JSON.parse(bracesTime));
     }
+    console.log(bracesTime);
   };
 
   useEffect(() => {
     loadBracesTime();
   }, []);
 
+  const generateBracesObjects = (amount: number) => {
+    const braces = [];
+    let currentDate = new Date();
+
+    for (let i = 0; i < amount; i++) {
+      const startDate = new Date(currentDate);
+      const endDate = new Date(currentDate);
+      endDate.setDate(endDate.getDate() + 10);
+
+      braces.push({
+        amount: i,
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
+        completed: false,
+      });
+
+      currentDate = new Date(endDate);
+    }
+
+    return braces;
+  };
+
   const handleSave = () => {
-    const newBracesTime = {
-      amount: bracesCount,
-      date: new Date().toISOString(),
-    };
-    setBracesTime([...bracesTime, newBracesTime]);
+    const newBracesObjects = generateBracesObjects(bracesCount);
+    const updatedBracesTime = [...bracesTime, ...newBracesObjects];
+
+    setBracesTime(updatedBracesTime);
     setBracesCount(0);
     setIsOpen(false);
-    AsyncStorage.setItem("bracesTime", JSON.stringify(bracesTime));
+
+    AsyncStorage.setItem("bracesTime", JSON.stringify(updatedBracesTime));
   };
 
   return (
@@ -75,11 +101,7 @@ const Braces = () => {
       <CustomBottomSheet isOpen={isOpen} onClose={() => setIsOpen(false)}>
         <View className="flex gap-4">
           <BracesInput value={bracesCount} onChange={setBracesCount} />
-          <CustomButton
-            title="Save"
-            variant="primary"
-            onPress={handleSave}
-          />
+          <CustomButton title="Save" variant="primary" onPress={handleSave} />
           <CustomButton
             title="Cancel"
             variant="secondary"
