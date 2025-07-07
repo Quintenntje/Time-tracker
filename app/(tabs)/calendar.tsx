@@ -6,6 +6,7 @@ import Icon from "react-native-vector-icons/Ionicons";
 import CustomBottomSheet from "../../components/BottomSheet";
 import CalendarDay from "../../components/CalendarDay";
 import PageLayout from "../../components/PageLayout";
+import formatTimeFromSeconds from "../../utils/formatTimeInSeconds";
 
 export default function Calendar() {
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -113,6 +114,7 @@ export default function Calendar() {
 
     setTotalTimeUsed(totalTimeUsed);
   }
+
   function goToPreviousMonth() {
     setCurrentDate((prev) => {
       const newDate = new Date(prev);
@@ -149,13 +151,6 @@ export default function Calendar() {
       "December",
     ];
     return months[month];
-  };
-
-  const formatTimeFromSeconds = (time: number) => {
-    const hours = Math.floor(time / 3600);
-    const minutes = Math.floor((time % 3600) / 60);
-    const seconds = time % 60;
-    return `${hours}h ${minutes}m ${seconds}s`;
   };
 
   const renderDaysOfMonth = () => {
