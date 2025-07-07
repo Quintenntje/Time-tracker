@@ -2,18 +2,20 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect, useState } from "react";
 import { Text, useColorScheme, View } from "react-native";
 import CustomBottomSheet from "../../components/BottomSheet";
+import BracesInput from "../../components/BracesInput";
 import CustomButton from "../../components/Button";
 import FixedToBottom from "../../components/FixedToBottom";
 import PageLayout from "../../components/PageLayout";
 
 interface BracesTime {
-  time: number;
+  amount: number;
   date: string;
 }
 
 const Braces = () => {
   const colorScheme = useColorScheme();
   const [bracesTime, setBracesTime] = useState<BracesTime[]>([]);
+  const [bracesCount, setBracesCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
 
   const loadBracesTime = async () => {
@@ -61,6 +63,7 @@ const Braces = () => {
 
       <CustomBottomSheet isOpen={isOpen} onClose={() => setIsOpen(false)}>
         <View className="flex gap-4">
+          <BracesInput value={bracesCount} onChange={setBracesCount} />
           <CustomButton
             title="Save"
             variant="primary"
