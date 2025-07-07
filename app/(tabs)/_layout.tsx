@@ -38,6 +38,16 @@ const TabsLayout = () => {
         }}
       />
       <Tabs.Screen
+        name="braces"
+        options={{
+          title: "Braces",
+          headerShown: false,
+          tabBarIcon: ({ color, size }) => (
+            <Icon name="time-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="settings"
         options={{
           title: "Settings",
