@@ -230,6 +230,7 @@ export default function Calendar() {
           {renderDaysOfMonth()}
         </View>
       </PageLayout>
+
       <CustomBottomSheet isOpen={sheetOpen} onClose={() => setSheetOpen(false)}>
         <Text className="text-2xl color-blue-500 font-semibold">
           {getMonthName(currentDate.getMonth())} {selectedDay},{" "}
