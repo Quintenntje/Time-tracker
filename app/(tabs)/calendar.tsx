@@ -8,6 +8,7 @@ import CustomBottomSheet from "../../components/BottomSheet";
 import CalendarDay from "../../components/CalendarDay";
 import PageLayout from "../../components/PageLayout";
 import formatTimeFromSeconds from "../../utils/formatTimeInSeconds";
+import {string} from "postcss-selector-parser";
 
 export default function Calendar() {
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -39,7 +40,7 @@ export default function Calendar() {
 
   const checkBraceWearDuration = () => {
     for (const brace of bracesTime) {
-      if (brace.started === true && brace.completed === false) {
+      if (brace.started && !brace.completed) {
         const startDate = new Date(brace.startDate);
         const currentDate = new Date();
 
@@ -59,9 +60,10 @@ export default function Calendar() {
             if (dayData) {
               const timeUsed = dayData.totalTimeUsed;
               const requiredTime = 22 * 60 * 60;
+              const day = 24 * 60 * 60
 
               if (timeUsed === 0) {
-                addTimeToEndDate(brace, requiredTime);
+                addTimeToEndDate(brace, day);
               } else {
                 if (timeUsed < requiredTime) {
                   const missingTime = requiredTime - timeUsed;
@@ -91,6 +93,10 @@ export default function Calendar() {
     setBracesTime([...bracesTime]);
     AsyncStorage.setItem("bracesTime", JSON.stringify(bracesTime));
   };
+
+  const reCalculateEndDate = () => {
+
+  }
 
   const dayHasMoreTime = (day: number) => {
     const selectedDate = new Date(

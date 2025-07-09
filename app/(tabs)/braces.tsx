@@ -8,6 +8,8 @@ import CustomButton from "../../components/Button";
 import FixedToBottom from "../../components/FixedToBottom";
 import PageLayout from "../../components/PageLayout";
 import isTodayBetweenDates from "../../utils/isTodayBetweenDates";
+import generateBracesObjects from "../../utils/generateBracesObjects";
+
 
 const Braces = () => {
   const colorScheme = useColorScheme();
@@ -28,28 +30,7 @@ const Braces = () => {
     loadBracesTime();
   }, []);
 
-  const generateBracesObjects = (amount: number) => {
-    const braces = [];
-    let currentDate = new Date();
 
-    for (let i = 0; i < amount; i++) {
-      const startDate = new Date(currentDate);
-      const endDate = new Date(currentDate);
-      endDate.setDate(endDate.getDate() + 10);
-
-      braces.push({
-        amount: i + 1,
-        startDate: startDate.toISOString(),
-        endDate: endDate.toISOString(),
-        started: false,
-        completed: false,
-      });
-
-      currentDate = new Date(endDate);
-    }
-
-    return braces;
-  };
 
   const getDaysTillCompletion = () => {
     const braces = bracesTime.filter((brace) => !brace.completed);
@@ -64,7 +45,8 @@ const Braces = () => {
   };
 
   const handleSave = () => {
-    const newBracesObjects = generateBracesObjects(bracesCount);
+    const today = new Date().toISOString();
+    const newBracesObjects = generateBracesObjects(bracesCount, today);
     const updatedBracesTime = [...bracesTime, ...newBracesObjects];
 
     setBracesTime(updatedBracesTime);
