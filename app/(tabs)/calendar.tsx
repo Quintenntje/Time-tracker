@@ -55,30 +55,17 @@ export default function Calendar() {
             const dayData = timeData.find(
               (data) => data.date === checkDate.toDateString()
             );
+
             if (dayData) {
               const timeUsed = dayData.totalTimeUsed;
               const requiredTime = 22 * 60 * 60;
 
               if (timeUsed === 0) {
-                const requiredTime = 22 * 60 * 60;
-                const endDate = new Date(brace.endDate);
-                endDate.setSeconds(endDate.getSeconds() + requiredTime);
-                brace.endDate = endDate.toISOString();
-
-                setBracesTime([...bracesTime]);
-                AsyncStorage.setItem("bracesTime", JSON.stringify(bracesTime));
+                addTimeToEndDate(brace, requiredTime);
               } else {
                 if (timeUsed < requiredTime) {
                   const missingTime = requiredTime - timeUsed;
-                  const endDate = new Date(brace.endDate);
-                  endDate.setSeconds(endDate.getSeconds() + missingTime);
-                  brace.endDate = endDate.toISOString();
-
-                  setBracesTime([...bracesTime]);
-                  AsyncStorage.setItem(
-                    "bracesTime",
-                    JSON.stringify(bracesTime)
-                  );
+                  addTimeToEndDate(brace, missingTime);
                 }
               }
             }
@@ -96,6 +83,14 @@ export default function Calendar() {
   useEffect(() => {
     checkBraceWearDuration();
   }, [new Date().toDateString()]);
+
+  const addTimeToEndDate = (brace: BracesTime, time: number) => {
+    const endDate = new Date(brace.endDate);
+    endDate.setSeconds(endDate.getSeconds() + time);
+    brace.endDate = endDate.toISOString();
+    setBracesTime([...bracesTime]);
+    AsyncStorage.setItem("bracesTime", JSON.stringify(bracesTime));
+  };
 
   const dayHasMoreTime = (day: number) => {
     const selectedDate = new Date(
