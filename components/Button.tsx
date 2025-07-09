@@ -1,11 +1,17 @@
 import React from "react";
-import { Text, TouchableOpacity, useColorScheme } from "react-native";
+import {
+  ActivityIndicator,
+  Text,
+  TouchableOpacity,
+  useColorScheme,
+} from "react-native";
 
 interface CustomButtonProps {
   title: string;
   onPress: () => void;
   variant?: "primary" | "secondary" | "danger";
   size?: "small" | "medium" | "large";
+  isLoading?: boolean;
   disabled?: boolean;
   className?: string;
   accessibilityLabel?: string;
@@ -16,6 +22,7 @@ const CustomButton: React.FC<CustomButtonProps> = ({
   onPress,
   variant = "primary",
   size = "medium",
+  isLoading = false,
   disabled = false,
   className = "",
   accessibilityLabel,
@@ -69,7 +76,11 @@ const CustomButton: React.FC<CustomButtonProps> = ({
         ${className}
       `}
     >
-      <Text className={`${getTextColor()} font-semibold `}>{title}</Text>
+      {isLoading ? (
+        <ActivityIndicator size="small" color={getTextColor()} />
+      ) : (
+        <Text className={`${getTextColor()} font-semibold `}>{title}</Text>
+      )}
     </TouchableOpacity>
   );
 };

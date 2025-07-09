@@ -12,6 +12,7 @@ const Braces = () => {
   const colorScheme = useColorScheme();
   const [bracesTime, setBracesTime] = useState<BracesTime[]>([]);
   const [bracesCount, setBracesCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
   const loadBracesTime = async () => {
@@ -77,7 +78,11 @@ const Braces = () => {
     updatedBracesTime[index].started = true;
     setBracesTime(updatedBracesTime);
 
+    setIsLoading(true);
+
     await AsyncStorage.setItem("bracesTime", JSON.stringify(updatedBracesTime));
+
+    setIsLoading(false);
   };
 
   return (
@@ -129,7 +134,14 @@ const Braces = () => {
                 colorScheme === "dark"
                   ? "border-gray-700 bg-gray-800"
                   : "border-gray-300 bg-white"
-              } ${item.completed || item.started || item.startDate > new Date().toISOString() ? "opacity-50" : ""}`}
+              } ${
+                item.completed ||
+                !item.started ||
+                item.startDate > new Date().toISOString() ||
+                item.endDate < new Date().toISOString()
+                  ? "opacity-50"
+                  : ""
+              }`}
             >
               <View className="flex-row justify-between items-center">
                 <View className="flex-1">
@@ -161,15 +173,19 @@ const Braces = () => {
                   >
                     End: {new Date(item.endDate).toLocaleDateString()}
                   </Text>
-                  {!item.started && !item.completed && item.startDate < new Date().toISOString() && (
-                  <CustomButton
-                    size="small"
-                    title="Start"
-                    variant="primary"
-                    className="mt-2"
-                    onPress={() => handleStartBrace(index)}
-                  />
-                  )}
+                  {!item.started ||
+                    !item.completed ||
+                    (item.startDate < new Date().toISOString() &&
+                    item.endDate > new Date().toISOString() && (
+                      <CustomButton
+                        size="small"
+                        isLoading={isLoading}
+                        title="Start"
+                        variant="primary"
+                        className="mt-2"
+                        onPress={() => handleStartBrace(index)}
+                      />
+                    ))}
                 </View>
                 <View
                   className={`px-3 py-1 rounded-full ${
@@ -177,7 +193,7 @@ const Braces = () => {
                   }`}
                 >
                   <Text className="text-white text-sm font-medium">
-                    {!item.started ? "Active" : "Not Started"}
+                    {item.started ? "Active" : "Not Started"}
                   </Text>
                 </View>
               </View>
