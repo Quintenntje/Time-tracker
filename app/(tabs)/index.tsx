@@ -57,17 +57,20 @@ export default function Index() {
   const schedulePushNotification = async () => {
     await Notifications.scheduleNotificationAsync({
       content: {
-        title: "Invisalign Timer Running",
+        title: "Invisalign is still running",
         body: `Time remaining: ${formatTime(time)}`,
       },
-      trigger: null,
+      trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.DAILY,
+        hour: 0,
+        minute: 15,
+      },
     });
   };
 
   useEffect(() => {
     if (isTimerRunning) {
       storeTimeData();
-      schedulePushNotification();
     }
   }, [isTimerRunning, time]);
 
@@ -161,13 +164,17 @@ export default function Index() {
 
     const currentTime = new Date().getTime();
     setLastStartTime(currentTime);
-    await AsyncStorage.setItem("lastStartTime", currentTime.toString());    
+    await AsyncStorage.setItem("lastStartTime", currentTime.toString());
     await AsyncStorage.setItem("initialTime", time.toString());
+
+    await schedulePushNotification();
   }
 
-  function handleStopTimer() {
+  async function handleStopTimer() {
     setIsTimerRunning(false);
     saveTimerState(false);
+
+    await Notifications.cancelAllScheduledNotificationsAsync();
   }
 
   const CheckTimePassedInBackground = async () => {
@@ -249,6 +256,7 @@ export default function Index() {
         });
       }, 1000);
     }
+
     return () => {
       if (timer) {
         clearInterval(timer);
