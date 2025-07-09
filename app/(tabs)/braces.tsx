@@ -7,6 +7,7 @@ import BracesInput from "../../components/BracesInput";
 import CustomButton from "../../components/Button";
 import FixedToBottom from "../../components/FixedToBottom";
 import PageLayout from "../../components/PageLayout";
+import isTodayBetweenDates from "../../utils/isTodayBetweenDates";
 
 const Braces = () => {
   const colorScheme = useColorScheme();
@@ -136,9 +137,7 @@ const Braces = () => {
                   : "border-gray-300 bg-white"
               } ${
                 item.completed ||
-                !item.started ||
-                item.startDate > new Date().toISOString() ||
-                item.endDate < new Date().toISOString()
+                !isTodayBetweenDates(item.startDate, item.endDate)
                   ? "opacity-50"
                   : ""
               }`}
@@ -173,10 +172,9 @@ const Braces = () => {
                   >
                     End: {new Date(item.endDate).toLocaleDateString()}
                   </Text>
-                  {!item.started ||
-                    !item.completed ||
-                    (item.startDate < new Date().toISOString() &&
-                    item.endDate > new Date().toISOString() && (
+                  {!item.started &&
+                    !item.completed &&
+                    isTodayBetweenDates(item.startDate, item.endDate) && (
                       <CustomButton
                         size="small"
                         isLoading={isLoading}
@@ -185,7 +183,7 @@ const Braces = () => {
                         className="mt-2"
                         onPress={() => handleStartBrace(index)}
                       />
-                    ))}
+                    )}
                 </View>
                 <View
                   className={`px-3 py-1 rounded-full ${
