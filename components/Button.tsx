@@ -5,6 +5,7 @@ interface CustomButtonProps {
   title: string;
   onPress: () => void;
   variant?: "primary" | "secondary" | "danger";
+  size?: "small" | "medium" | "large";
   disabled?: boolean;
   className?: string;
   accessibilityLabel?: string;
@@ -14,6 +15,7 @@ const CustomButton: React.FC<CustomButtonProps> = ({
   title,
   onPress,
   variant = "primary",
+  size = "medium",
   disabled = false,
   className = "",
   accessibilityLabel,
@@ -33,6 +35,19 @@ const CustomButton: React.FC<CustomButtonProps> = ({
     }
   };
 
+  const getSizeStyles = () => {
+    switch (size) {
+      case "small":
+        return "px-4 py-2 text-sm max-w-[100px]";
+      case "medium":
+        return "px-6 py-3 text-base max-w-[150px]";
+      case "large":
+        return "px-8 py-4 text-xl";
+      default:
+        return "px-6 py-3";
+    }
+  };
+
   const getTextColor = () => {
     if (variant === "secondary") {
       return colorScheme === "dark" ? "text-white" : "text-gray-900";
@@ -49,11 +64,12 @@ const CustomButton: React.FC<CustomButtonProps> = ({
       className={`
         px-6 py-3 rounded-lg items-center justify-center
         ${getVariantStyles()}
+        ${getSizeStyles()}
         ${disabled ? "opacity-50" : ""}
         ${className}
       `}
     >
-      <Text className={`${getTextColor()} font-semibold text-xl`}>{title}</Text>
+      <Text className={`${getTextColor()} font-semibold `}>{title}</Text>
     </TouchableOpacity>
   );
 };

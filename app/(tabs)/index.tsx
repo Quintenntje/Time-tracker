@@ -237,6 +237,7 @@ export default function Index() {
       <FixedToBottom>
         {bracesTime.length === 0 ? (
           <CustomButton
+            size="large"
             title="Set Braces Time"
             onPress={() => router.push("/braces")}
           />
@@ -244,13 +245,14 @@ export default function Index() {
           <>
             {isTimerRunning && (
               <CustomButton
+
                 title="Stop Timer"
                 variant="danger"
                 onPress={handleStopTimer}
               />
             )}
             {!isTimerRunning && (
-              <CustomButton title="Start Timer" onPress={handleStartTimer} />
+              <CustomButton title="Start Timer" size="large" onPress={handleStartTimer} />
             )}
           </>
         )}

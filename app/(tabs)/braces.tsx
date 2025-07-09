@@ -39,6 +39,7 @@ const Braces = () => {
         amount: i + 1,
         startDate: startDate.toISOString(),
         endDate: endDate.toISOString(),
+        started: false,
         completed: false,
       });
 
@@ -69,6 +70,14 @@ const Braces = () => {
     setIsOpen(false);
 
     AsyncStorage.setItem("bracesTime", JSON.stringify(updatedBracesTime));
+  };
+
+  const handleStartBrace = async (index: number) => {
+    const updatedBracesTime = [...bracesTime];
+    updatedBracesTime[index].started = true;
+    setBracesTime(updatedBracesTime);
+
+    await AsyncStorage.setItem("bracesTime", JSON.stringify(updatedBracesTime));
   };
 
   return (
@@ -114,13 +123,13 @@ const Braces = () => {
         <FlatList
           data={bracesTime}
           keyExtractor={(item, index) => `brace-${index}-${item.amount}`}
-          renderItem={({ item }) => (
+          renderItem={({ item, index }) => (
             <View
               className={`p-4 rounded-lg border-2 mb-3 ${
                 colorScheme === "dark"
                   ? "border-gray-700 bg-gray-800"
                   : "border-gray-300 bg-white"
-              } ${item.completed ? "opacity-50" : ""}`}
+              } ${item.completed || !item.started ? "opacity-50" : ""}`}
             >
               <View className="flex-row justify-between items-center">
                 <View className="flex-1">
@@ -152,6 +161,12 @@ const Braces = () => {
                   >
                     End: {new Date(item.endDate).toLocaleDateString()}
                   </Text>
+                  <CustomButton
+                    size="small"
+                    title="Start"
+                    variant="primary"
+                    onPress={() => handleStartBrace(index)}
+                  />
                 </View>
                 <View
                   className={`px-3 py-1 rounded-full ${
@@ -159,7 +174,7 @@ const Braces = () => {
                   }`}
                 >
                   <Text className="text-white text-sm font-medium">
-                    {item.completed ? "Completed" : "Active"}
+                    {item.started ? "Active" : "Not Started"}
                   </Text>
                 </View>
               </View>
@@ -172,6 +187,7 @@ const Braces = () => {
       {bracesTime.length === 0 && (
         <FixedToBottom>
           <CustomButton
+            size="large"
             title="Add Braces Time"
             onPress={() => setIsOpen(true)}
           />
@@ -181,8 +197,14 @@ const Braces = () => {
       <CustomBottomSheet isOpen={isOpen} onClose={() => setIsOpen(false)}>
         <View className="flex gap-4">
           <BracesInput value={bracesCount} onChange={setBracesCount} />
-          <CustomButton title="Save" variant="primary" onPress={handleSave} />
           <CustomButton
+            title="Save"
+            variant="primary"
+            size="large"
+            onPress={handleSave}
+          />
+          <CustomButton
+            size="large"
             title="Cancel"
             variant="secondary"
             onPress={() => setIsOpen(false)}
