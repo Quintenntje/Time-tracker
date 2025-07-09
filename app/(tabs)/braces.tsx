@@ -21,6 +21,7 @@ const Braces = () => {
   const loadBracesTime = async () => {
     const bracesTime = await AsyncStorage.getItem("bracesTime");
 
+
     if (bracesTime) {
       setBracesTime(JSON.parse(bracesTime));
     }
@@ -45,8 +46,7 @@ const Braces = () => {
   };
 
   const handleSave = () => {
-    const today = new Date().toISOString();
-    const newBracesObjects = generateBracesObjects(bracesCount, today);
+    const newBracesObjects = generateBracesObjects(bracesCount);
     const updatedBracesTime = [...bracesTime, ...newBracesObjects];
 
     setBracesTime(updatedBracesTime);

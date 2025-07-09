@@ -8,7 +8,6 @@ import CustomBottomSheet from "../../components/BottomSheet";
 import CalendarDay from "../../components/CalendarDay";
 import PageLayout from "../../components/PageLayout";
 import formatTimeFromSeconds from "../../utils/formatTimeInSeconds";
-import {string} from "postcss-selector-parser";
 
 export default function Calendar() {
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -90,13 +89,22 @@ export default function Calendar() {
     const endDate = new Date(brace.endDate);
     endDate.setSeconds(endDate.getSeconds() + time);
     brace.endDate = endDate.toISOString();
+
+    for (const brace of bracesTime) {
+      if (!brace.started) {
+        const startDate = new Date(brace.startDate);
+        const endDate = new Date(brace.endDate);
+        startDate.setSeconds(startDate.getSeconds() + time);
+        endDate.setSeconds(endDate.getSeconds() + time);
+        brace.startDate = startDate.toISOString();
+        brace.endDate = endDate.toISOString();
+      }
+    }
     setBracesTime([...bracesTime]);
     AsyncStorage.setItem("bracesTime", JSON.stringify(bracesTime));
   };
 
-  const reCalculateEndDate = () => {
 
-  }
 
   const dayHasMoreTime = (day: number) => {
     const selectedDate = new Date(

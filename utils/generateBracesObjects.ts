@@ -1,4 +1,4 @@
-const generateBracesObjects = (amount: number, startDate: string) => {
+const generateBracesObjects = (amount: number) => {
     const braces = [];
     let currentDate = new Date();
 
@@ -8,7 +8,7 @@ const generateBracesObjects = (amount: number, startDate: string) => {
 
         braces.push({
             amount: i + 1,
-            startDate: startDate,
+            startDate: currentDate.toISOString(),
             endDate: endDate.toISOString(),
             started: false,
             completed: false,
