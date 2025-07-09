@@ -1,11 +1,11 @@
 import { registerBackgroundTask } from "@/utils/backgroundTimer";
 import { registerForPushNotificationsAsync } from "@/utils/notificationSetup";
+import * as Notifications from "expo-notifications";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import { useColorScheme } from "react-native";
-import "./global.css";  
-import * as Notifications from "expo-notifications";
+import "./global.css";
 
 export default function RootLayout() {
   Notifications.setNotificationHandler({

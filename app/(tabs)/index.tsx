@@ -66,7 +66,7 @@ export default function Index() {
       storeTimeData();
       schedulePushNotification();
     }
-  }, [isTimerRunning, time]);
+      }, [isTimerRunning, time]);
 
   const saveTimerState = async (isRunning: boolean) => {
     try {
@@ -307,3 +307,4 @@ export default function Index() {
     </>
   );
 }
+
