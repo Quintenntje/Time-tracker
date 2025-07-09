@@ -51,7 +51,7 @@ export default function Calendar() {
           const checkDate = new Date(startDate);
           checkDate.setDate(startDate.getDate() + i);
 
-          if (!dayHasLessTime(checkDate.getDate())) {
+          if (!dayHasMoreTime(checkDate.getDate())) {
             const dayData = timeData.find(
               (data) => data.date === checkDate.toDateString()
             );
@@ -59,14 +59,27 @@ export default function Calendar() {
               const timeUsed = dayData.totalTimeUsed;
               const requiredTime = 22 * 60 * 60;
 
-              if (timeUsed < requiredTime) {
-                const missingTime = requiredTime - timeUsed;
+              if (timeUsed === 0) {
+                const requiredTime = 22 * 60 * 60;
                 const endDate = new Date(brace.endDate);
-                endDate.setSeconds(endDate.getSeconds() + missingTime);
+                endDate.setSeconds(endDate.getSeconds() + requiredTime);
                 brace.endDate = endDate.toISOString();
 
                 setBracesTime([...bracesTime]);
                 AsyncStorage.setItem("bracesTime", JSON.stringify(bracesTime));
+              } else {
+                if (timeUsed < requiredTime) {
+                  const missingTime = requiredTime - timeUsed;
+                  const endDate = new Date(brace.endDate);
+                  endDate.setSeconds(endDate.getSeconds() + missingTime);
+                  brace.endDate = endDate.toISOString();
+
+                  setBracesTime([...bracesTime]);
+                  AsyncStorage.setItem(
+                    "bracesTime",
+                    JSON.stringify(bracesTime)
+                  );
+                }
               }
             }
           }
@@ -78,13 +91,13 @@ export default function Calendar() {
   useEffect(() => {
     loadTimeData();
     loadBracesTime();
-  }, []);
+  }, [timeData, bracesTime]);
 
   useEffect(() => {
     checkBraceWearDuration();
   }, [new Date().toDateString()]);
 
-  const dayHasLessTime = (day: number) => {
+  const dayHasMoreTime = (day: number) => {
     const selectedDate = new Date(
       currentDate.getFullYear(),
       currentDate.getMonth(),
@@ -237,7 +250,7 @@ export default function Calendar() {
             handleDatePress(i);
           }}
           active={isToday}
-          hasLessTime={dayHasLessTime(i)}
+          hasMoreTime={dayHasMoreTime(i)}
         >
           {i}
         </CalendarDay>

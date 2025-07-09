@@ -4,22 +4,22 @@ interface PageLayoutProps {
   children: React.ReactNode;
   onPress?: () => void;
   active?: boolean;
-  hasLessTime?: boolean | null;
+  hasMoreTime?: boolean | null;
 }
 
 const CalendarDay: React.FC<PageLayoutProps> = ({
   children,
   onPress,
   active,
-  hasLessTime = false,
+  hasMoreTime = null,
 }) => {
   const colorScheme = useColorScheme();
 
   const getBorderColor = () => {
-    if (hasLessTime === null) {
+    if (hasMoreTime === null) {
       return "border-gray-300 dark:border-gray-700";
     }
-    if (hasLessTime === false) {
+    if (hasMoreTime === true) {
       return "border-red-500 dark:border-red-700";
     }
     return "border-green-500 dark:border-green-700";
