@@ -2,6 +2,7 @@ import { BracesTime } from "@/types/BracesTime";
 import { TimeData } from "@/types/TimeData";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
+import * as Notifications from "expo-notifications";
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { Text, useColorScheme, View } from "react-native";
@@ -50,6 +51,23 @@ export default function Index() {
     }
   };
 
+  const schedulePushNotification = async () => {
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: "Invisalign Timer Running",
+        body: `Time remaining: ${formatTime(time)}`,
+      },
+      trigger: null,
+    });
+  };
+
+  useEffect(() => {
+    if (isTimerRunning) {
+      storeTimeData();
+      schedulePushNotification();
+    }
+  }, [isTimerRunning, time]);
+
   const saveTimerState = async (isRunning: boolean) => {
     try {
       await AsyncStorage.setItem("isTimerRunning", JSON.stringify(isRunning));
@@ -85,6 +103,7 @@ export default function Index() {
       console.log("Error saving time data:", error);
     }
   };
+
   const checkNewDay = async () => {
     const today = new Date().toDateString();
     const savedDate = await AsyncStorage.getItem("lastResetDate");
@@ -180,7 +199,6 @@ export default function Index() {
 
           return newTime;
         });
-        await storeTimeData();
       }, 1000);
     }
     return () => {

@@ -26,7 +26,7 @@ const CustomButton: React.FC<CustomButtonProps> = ({
   disabled = false,
   className = "",
   accessibilityLabel,
-}) => {
+}) =>  {
   const colorScheme = useColorScheme();
 
   const getVariantStyles = () => {

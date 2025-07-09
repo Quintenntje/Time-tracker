@@ -126,6 +126,7 @@ const Braces = () => {
             </>
           )}
         </View>
+
         <FlatList
           data={bracesTime}
           keyExtractor={(item, index) => `brace-${index}-${item.amount}`}
