@@ -143,6 +143,15 @@ export default function Index() {
     saveTimerState(false);
   }
 
+  const checkIfBraceIsStarted = () => {
+    for (const brace of bracesTime) {
+      if (brace.started === true) {
+        return true;
+      }
+    }
+    return false;
+  };
+
   useFocusEffect(
     React.useCallback(() => {
       loadStoredData();
@@ -202,6 +211,16 @@ export default function Index() {
               No braces found, add the total braces to get started
             </Text>
           </View>
+        ) : !checkIfBraceIsStarted() ? (
+          <View className="flex items-center justify-center mt-10 w-full">
+            <Text
+              className={`text-xl text-center ${
+                colorScheme === "dark" ? "text-gray-300" : "text-gray-600"
+              }`}
+            >
+              No active braces found. Start a brace to begin tracking time.
+            </Text>
+          </View>
         ) : (
           <>
             <View className="flex items-center justify-center mt-10 w-full">
@@ -241,11 +260,16 @@ export default function Index() {
             title="Set Braces Time"
             onPress={() => router.push("/braces")}
           />
+        ) : !checkIfBraceIsStarted() ? (
+          <CustomButton
+            size="large"
+            title="Go to Braces"
+            onPress={() => router.push("/braces")}
+          />
         ) : (
           <>
             {isTimerRunning && (
               <CustomButton
-
                 title="Stop Timer"
                 size="large"
                 variant="danger"
@@ -253,7 +277,11 @@ export default function Index() {
               />
             )}
             {!isTimerRunning && (
-              <CustomButton title="Start Timer" size="large" onPress={handleStartTimer} />
+              <CustomButton
+                title="Start Timer"
+                size="large"
+                onPress={handleStartTimer}
+              />
             )}
           </>
         )}
