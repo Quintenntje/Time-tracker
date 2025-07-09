@@ -1,4 +1,3 @@
-import { registerBackgroundTask } from "@/utils/backgroundTimer";
 import { registerForPushNotificationsAsync } from "@/utils/notificationSetup";
 import * as Notifications from "expo-notifications";
 import { Stack } from "expo-router";
@@ -20,7 +19,6 @@ export default function RootLayout() {
 
   useEffect(() => {
     registerForPushNotificationsAsync();
-    registerBackgroundTask();
   }, []);
 
   return (

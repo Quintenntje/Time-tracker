@@ -5,7 +5,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import * as Notifications from "expo-notifications";
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { Text, useColorScheme, View } from "react-native";
+import { AppState, Text, useColorScheme, View } from "react-native";
 import CustomButton from "../../components/Button";
 import FixedToBottom from "../../components/FixedToBottom";
 import PageLayout from "../../components/PageLayout";
@@ -14,6 +14,7 @@ export default function Index() {
   const colorScheme = useColorScheme();
   const [time, setTime] = useState(86400);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
+  const [lastStartTime, setLastStartTime] = useState<number | null>(null);
   const [lastResetDate, setLastResetDate] = useState(new Date().toDateString());
   const [bracesTime, setBracesTime] = useState<BracesTime[]>([]);
 
@@ -23,6 +24,7 @@ export default function Index() {
       const storedIsRunning = await AsyncStorage.getItem("isTimerRunning");
       const storedDate = await AsyncStorage.getItem("lastResetDate");
       const storedBracesTime = await AsyncStorage.getItem("bracesTime");
+      const storedLastStartTime = await AsyncStorage.getItem("lastStartTime");
 
       if (storedBracesTime) {
         setBracesTime(JSON.parse(storedBracesTime));
@@ -38,6 +40,7 @@ export default function Index() {
       }
       if (storedIsRunning) setIsTimerRunning(JSON.parse(storedIsRunning));
       if (storedDate) setLastResetDate(storedDate);
+      if (storedLastStartTime) setLastStartTime(parseInt(storedLastStartTime));
     } catch (error) {
       console.log("Error loading stored data:", error);
     }
@@ -66,7 +69,7 @@ export default function Index() {
       storeTimeData();
       schedulePushNotification();
     }
-      }, [isTimerRunning, time]);
+  }, [isTimerRunning, time]);
 
   const saveTimerState = async (isRunning: boolean) => {
     try {
@@ -152,15 +155,46 @@ export default function Index() {
       .padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
-  function handleStartTimer() {
+  async function handleStartTimer() {
     setIsTimerRunning(true);
     saveTimerState(true);
+
+    const currentTime = new Date().getTime();
+    setLastStartTime(currentTime);
+    await AsyncStorage.setItem("lastStartTime", currentTime.toString());    
+    await AsyncStorage.setItem("initialTime", time.toString());
   }
 
   function handleStopTimer() {
     setIsTimerRunning(false);
     saveTimerState(false);
   }
+
+  const CheckTimePassedInBackground = async () => {
+    try {
+      const lastStartTimeStr = await AsyncStorage.getItem("lastStartTime");
+      const isTimerRunningStr = await AsyncStorage.getItem("isTimerRunning");
+      const initialTimeStr = await AsyncStorage.getItem("initialTime");
+
+      if (isTimerRunningStr === "true" && lastStartTimeStr && initialTimeStr) {
+        const lastStartTime = parseInt(lastStartTimeStr);
+        const initialTime = parseInt(initialTimeStr);
+        const timeNow = new Date().getTime();
+        const timePassed = Math.floor((timeNow - lastStartTime) / 1000);
+        const newTime = Math.max(initialTime - timePassed, 0);
+
+        setTime(newTime);
+        saveTime(newTime);
+
+        if (newTime <= 0) {
+          setIsTimerRunning(false);
+          saveTimerState(false);
+        }
+      }
+    } catch (error) {
+      console.log("Error checking time passed in background:", error);
+    }
+  };
 
   const checkIfBraceIsStarted = () => {
     for (const brace of bracesTime) {
@@ -170,6 +204,20 @@ export default function Index() {
     }
     return false;
   };
+
+  const useAppFocus = (onAppOpen: () => void) => {
+    useEffect(() => {
+      const subscription = AppState.addEventListener("change", (state) => {
+        if (state === "active") {
+          onAppOpen();
+        }
+      });
+
+      return () => subscription.remove();
+    }, []);
+  };
+
+  useAppFocus(CheckTimePassedInBackground);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -307,4 +355,3 @@ export default function Index() {
     </>
   );
 }
-
