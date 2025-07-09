@@ -1,4 +1,5 @@
 import MonthNavigator from "@/components/MonthNavigator";
+import { BracesTime } from "@/types/BracesTime";
 import { TimeData } from "@/types/TimeData";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect, useState } from "react";
@@ -14,6 +15,7 @@ export default function Calendar() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [totalTimeUsed, setTotalTimeUsed] = useState(0);
   const [timeData, setTimeData] = useState<TimeData[]>([]);
+  const [bracesTime, setBracesTime] = useState<BracesTime[]>([]);
   const colorScheme = useColorScheme();
 
   const loadTimeData = async () => {
@@ -27,9 +29,60 @@ export default function Calendar() {
     }
   };
 
+  const loadBracesTime = async () => {
+    const bracesTime = await AsyncStorage.getItem("bracesTime");
+
+    if (bracesTime) {
+      setBracesTime(JSON.parse(bracesTime));
+    }
+  };
+
+  const checkBraceWearDuration = () => {
+    for (const brace of bracesTime) {
+      if (brace.started === true && brace.completed === false) {
+        const startDate = new Date(brace.startDate);
+        const currentDate = new Date();
+
+        const daysBetween = Math.floor(
+          (currentDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
+        );
+
+        for (let i = 0; i <= daysBetween; i++) {
+          const checkDate = new Date(startDate);
+          checkDate.setDate(startDate.getDate() + i);
+
+          if (!dayHasLessTime(checkDate.getDate())) {
+            const dayData = timeData.find(
+              (data) => data.date === checkDate.toDateString()
+            );
+            if (dayData) {
+              const timeUsed = dayData.totalTimeUsed;
+              const requiredTime = 22 * 60 * 60;
+
+              if (timeUsed < requiredTime) {
+                const missingTime = requiredTime - timeUsed;
+                const endDate = new Date(brace.endDate);
+                endDate.setSeconds(endDate.getSeconds() + missingTime);
+                brace.endDate = endDate.toISOString();
+
+                setBracesTime([...bracesTime]);
+                AsyncStorage.setItem("bracesTime", JSON.stringify(bracesTime));
+              }
+            }
+          }
+        }
+      }
+    }
+  };
+
   useEffect(() => {
     loadTimeData();
+    loadBracesTime();
   }, []);
+
+  useEffect(() => {
+    checkBraceWearDuration();
+  }, [new Date().toDateString()]);
 
   const dayHasLessTime = (day: number) => {
     const selectedDate = new Date(
@@ -74,8 +127,8 @@ export default function Calendar() {
 
     if (!dayData) return false;
 
-    const timeLimit = 2 * 60 * 60; // 2 hours
-    return dayData.totalTimeUsed < timeLimit;
+    const timeLimit = 2 * 60 * 60; // 22 hours
+    return dayData.totalTimeUsed > timeLimit || dayData.totalTimeUsed === 0;
   };
 
   function getDaysInMonth(month: number, year: number) {

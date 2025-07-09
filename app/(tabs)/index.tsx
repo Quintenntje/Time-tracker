@@ -247,6 +247,7 @@ export default function Index() {
               <CustomButton
 
                 title="Stop Timer"
+                size="large"
                 variant="danger"
                 onPress={handleStopTimer}
               />
