@@ -37,7 +37,9 @@ export default function Calendar() {
     }
   };
 
-  const checkBraceWearDuration = () => {
+
+  const checkBraceWearDuration = async () => {
+    console.log("New day");
     for (const brace of bracesTime) {
       if (brace.started && !brace.completed) {
         const startDate = new Date(brace.startDate);
@@ -51,7 +53,7 @@ export default function Calendar() {
           const checkDate = new Date(startDate);
           checkDate.setDate(startDate.getDate() + i);
 
-          if (!dayHasMoreTime(checkDate.getDate())) {
+          if (dayHasMoreTime(checkDate.getDate())) {
             const dayData = timeData.find(
               (data) => data.date === checkDate.toDateString()
             );
@@ -64,9 +66,10 @@ export default function Calendar() {
               if (timeUsed === 0) {
                 addTimeToEndDate(brace, day);
               } else {
-                if (timeUsed < requiredTime) {
-                  const missingTime = requiredTime - timeUsed;
-                  addTimeToEndDate(brace, missingTime);
+                if (timeUsed > requiredTime) {
+
+                  const extraTime = timeUsed - requiredTime;
+                  addTimeToEndDate(brace, extraTime);
                 }
               }
             }
@@ -79,12 +82,21 @@ export default function Calendar() {
   useEffect(() => {
     loadTimeData();
     loadBracesTime();
-  }, [timeData, bracesTime]);
+  }, []);
 
   useEffect(() => {
-    checkBraceWearDuration();
-  }, [new Date().toDateString()]);
+    const runOncePerDay = async () => {
+      const today = new Date().toDateString();
+      const lastRun = await AsyncStorage.getItem("lastCheckBraceWearDate");
 
+      if (lastRun === today) return;
+
+      await checkBraceWearDuration();
+      await AsyncStorage.setItem("lastCheckBraceWearDate", today);
+    };
+
+    runOncePerDay();
+  }, [timeData, bracesTime]);
   const addTimeToEndDate = (brace: BracesTime, time: number) => {
     const endDate = new Date(brace.endDate);
     endDate.setSeconds(endDate.getSeconds() + time);
